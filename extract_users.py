@@ -57,15 +57,13 @@ def fetch_url(url, attempt=1):
         # Gérer les erreurs HTTP spécifiques
         if response.status_code == 403:
             print(f"Erreur 403 Forbidden à {url}. Vérifiez votre token GitHub et le quota API.")
-            # Si handle_rate_limit n'a pas déclenché de pause (par exemple, quota non affiché),
-            # on peut faire une pause manuelle ici pour éviter une boucle rapide.
-            time.sleep(RETRY_DELAY_SECONDS * 2)  # Pause un peu plus longue pour 403
-            return None  # Considérer comme un échec pour cet appel
+
+            time.sleep(RETRY_DELAY_SECONDS * 2)
+            return None
 
         if response.status_code == 429:
             print(f"Erreur 429 Too Many Requests à {url}. Attente avant de réessayer.")
-            # handle_rate_limit est déjà censé avoir mis en pause ou va le faire
-            time.sleep(RETRY_DELAY_SECONDS * attempt)  # Délai progressif
+            time.sleep(RETRY_DELAY_SECONDS * attempt)
             if attempt < MAX_RETRIES:
                 print(f"Réessai ({attempt + 1}/{MAX_RETRIES}) pour {url}...")
                 return fetch_url(url, attempt + 1)
@@ -75,7 +73,7 @@ def fetch_url(url, attempt=1):
 
         if 500 <= response.status_code < 600:
             print(f"Erreur serveur (5xx) à {url}: {response.status_code}. Attente avant de réessayer.")
-            time.sleep(RETRY_DELAY_SECONDS * attempt)  # Délai progressif
+            time.sleep(RETRY_DELAY_SECONDS * attempt)
             if attempt < MAX_RETRIES:
                 print(f"Réessai ({attempt + 1}/{MAX_RETRIES}) pour {url}...")
                 return fetch_url(url, attempt + 1)
@@ -83,13 +81,12 @@ def fetch_url(url, attempt=1):
                 print(f"Échec persistant après {MAX_RETRIES} tentatives pour {url}.")
                 return None
 
-        response.raise_for_status()  # Lève une exception pour toute autre erreur 4xx/5xx non gérée ci-dessus
+        response.raise_for_status()
         return response.json()
 
     except requests.exceptions.RequestException as e:
         print(f"Erreur réseau ou inattendue lors de la requête à {url}: {e}")
-        # Pour les erreurs réseau (pas de connexion, timeout), on peut aussi tenter un réessai
-        time.sleep(RETRY_DELAY_SECONDS * attempt)  # Délai progressif
+        time.sleep(RETRY_DELAY_SECONDS * attempt)
         if attempt < MAX_RETRIES:
             print(f"Réessai ({attempt + 1}/{MAX_RETRIES}) pour {url} suite à une erreur réseau...")
             return fetch_url(url, attempt + 1)
@@ -115,12 +112,10 @@ def extract_github_users(num_users_to_fetch):
         users_batch = fetch_url(users_list_url)
 
         if users_batch is None:
-            # Si fetch_url retourne None, c'est qu'il y a eu une erreur non résolue ou un 403
-            # On pourrait vouloir attendre un peu avant de réessayer ce lot ou quitter
             print("Erreur non récupérable lors de la récupération du lot initial. Arrêt de l'extraction.")
             break
 
-        if not users_batch:  # Plus d'utilisateurs disponibles
+        if not users_batch:
             print("Plus d'utilisateurs disponibles ou fin de l'API. Arrêt de l'extraction.")
             break
 
@@ -137,7 +132,7 @@ def extract_github_users(num_users_to_fetch):
                     f"  Traitement de l'utilisateur : {login} (ID: {user_id}). Total traités : {fetched_count + 1}/{num_users_to_fetch}")
                 details = fetch_url(user_detail_url)
 
-                if details:  # Si les détails ont été récupérés (non None)
+                if details:
                     extracted_user = {
                         'login': login,
                         'id': user_id,
@@ -152,11 +147,10 @@ def extract_github_users(num_users_to_fetch):
             else:
                 print(f"  Utilisateur sans login ou ID dans le lot. Skippé : {user_summary}")
 
-        # Mets à jour le 'since_id' pour la prochaine requête
         if users_batch:
             current_since_id = users_batch[-1]['id']
 
-        time.sleep(1)  # Petite pause entre les lots pour être sympa avec l'API
+        time.sleep(1)
 
     print(f"\nExtraction terminée. Total d'utilisateurs extraits : {len(all_extracted_users)}.")
     return all_extracted_users

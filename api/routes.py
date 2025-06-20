@@ -13,7 +13,6 @@ router = APIRouter()
 FILTERED_USERS_FILE = "data/filtered_users.json"
 
 # Variable globale pour stocker les utilisateurs chargés.
-# C'est important : les données ne seront chargées qu'une seule fois au démarrage de l'API.
 _users_data: List[User] = []
 
 
@@ -52,7 +51,7 @@ async def startup_event():
 
 @router.get(
     "/users/",
-    response_model=List[User],  # Indique que la réponse sera une liste de User
+    response_model=List[User],
     summary="Obtenir tous les utilisateurs filtrés",
     description="Retourne la liste complète des utilisateurs GitHub filtrés et nettoyés, nécessitant une authentification.",
     dependencies=[Depends(get_current_username)]  # Protège la route avec l'authentification
@@ -66,7 +65,7 @@ async def get_all_users():
 
 @router.get(
     "/users/{login}",
-    response_model=User,  # Indique que la réponse sera un seul User
+    response_model=User,
     summary="Obtenir les détails d'un utilisateur par login",
     description="Retourne les informations détaillées d'un utilisateur spécifique via son login, nécessitant une authentification.",
     dependencies=[Depends(get_current_username)]  # Protège la route
@@ -88,7 +87,7 @@ async def get_user_by_login(login: str):
 
 
 @router.get(
-    "/users/search/",  # Notez le slash final pour la cohérence
+    "/users/search/",
     response_model=List[User],
     summary="Rechercher des utilisateurs par mot-clé dans le login",
     description="Recherche les utilisateurs dont le login contient le mot-clé spécifié (non sensible à la casse), nécessitant une authentification.",
@@ -101,7 +100,7 @@ async def search_users(
     La recherche est insensible à la casse.
     """
     if not q:
-        return _users_data  # Retourne tous les utilisateurs si aucun mot-clé n'est fourni
+        return _users_data
 
     # Convertit le mot-clé en minuscules pour une recherche insensible à la casse
     search_query = q.lower()

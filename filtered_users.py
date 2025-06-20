@@ -52,32 +52,28 @@ def apply_filters(users_data):
     MIN_CREATION_DATE = datetime(2000, 1, 1, 0, 0, 0)  # 1er janvier 2015, minuit
 
     for user in users_data:
-        # Vérification du champ 'bio'
         bio = user.get('bio')
-        if not bio:  # Vérifie si bio est None ou une chaîne vide
+        if not bio:
             continue
 
-            # Vérification du champ 'avatar_url'
         avatar_url = user.get('avatar_url')
-        if not avatar_url:  # Vérifie si avatar_url est None ou une chaîne vide
+        if not avatar_url:
             continue
 
-        # Vérification du champ 'created_at'
         created_at_str = user.get('created_at')
-        if not created_at_str:  # Vérifie si created_at est None ou vide
+        if not created_at_str:
             continue
         try:
-            # Parse la chaîne de date en objet datetime
-            # Le format est généralement ISO 8601 (e.g., "2007-10-20T05:24:19Z")
+
             created_at_date = datetime.strptime(created_at_str, "%Y-%m-%dT%H:%M:%SZ")
             if created_at_date < MIN_CREATION_DATE:
-                continue  # L'utilisateur est trop ancien
+                continue
         except ValueError:
             print(
                 f"Avertissement : Format de date invalide pour l'utilisateur {user.get('login')}: {created_at_str}. Skippé.")
-            continue  # Si la date est mal formée, on skippe l'utilisateur
+            continue
 
-        # Si tous les critères sont remplis, ajoute l'utilisateur filtré
+
         filtered_users.append(user)
 
     return filtered_users
@@ -91,7 +87,6 @@ def save_to_json(data, filename):
     try:
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, 'w', encoding='utf-8') as f:
-            # Ne garder que les champs utiles pour le fichier de sortie
             output_data = [
                 {
                     'login': user.get('login'),
@@ -114,7 +109,7 @@ if __name__ == "__main__":
     initial_users = load_users_data(INPUT_FILE)
     if initial_users is None:
         print("Arrêt du script en raison d'une erreur de chargement.")
-        exit(1)  # Quitte le script si le chargement a échoué
+        exit(1)
 
     num_loaded = len(initial_users)
     print(f"'{num_loaded}' utilisateurs chargés depuis '{INPUT_FILE}'.")

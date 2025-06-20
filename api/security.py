@@ -4,16 +4,13 @@ from typing import Dict, Optional
 import os
 from dotenv import load_dotenv
 
-# Charge les variables d'environnement (pourrait être pour des identifiants réels)
+# Charge les variables d'environnement
 load_dotenv()
 
 BASIC_AUTH_USERNAME = os.getenv("API_USERNAME", "admin")
 BASIC_AUTH_PASSWORD = os.getenv("API_PASSWORD", "admin123")
 
-# Définit la base de données des utilisateurs pour l'authentification
-# Pour cet exemple, nous utilisons un seul utilisateur défini par les variables d'environnement.
-# Pour gérer plusieurs utilisateurs, tu pourrais lire une liste de paires USERNAME_N/PASSWORD_N
-# ou charger une configuration plus complexe depuis un fichier.
+
 USERS_DB: Dict[str, str] = {
     BASIC_AUTH_USERNAME: BASIC_AUTH_PASSWORD
 }
@@ -39,5 +36,4 @@ def authenticate_user(credentials: HTTPBasicCredentials = Depends(security)) -> 
     )
 
 
-# Alias pour rendre l'importation plus simple dans les routes
 get_current_username = authenticate_user
